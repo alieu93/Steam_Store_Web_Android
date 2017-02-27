@@ -3,7 +3,10 @@ package com.example.adamlieu.steam_store_web_api_android;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -23,24 +26,33 @@ public class MainActivity extends AppCompatActivity {
         new Initialize().execute();
     }
 
-    private class Initialize extends AsyncTask<Void, Void, Void> {
-        protected Void doInBackground(Void... params){
+    private class Initialize extends AsyncTask<Void, Void, String> {
+        String ht;
+        protected String doInBackground(Void... params){
             try {
                 URL url = new URL("http://store.steampowered.com/search/?filter=comingsoon");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                readStream(in);
+                ht = readStream(in);
             } catch (MalformedURLException e) {
                 Log.e("MalformedURL: ", e.toString());
             } catch (IOException e) {
                 Log.e("URL IOException: ", e.toString());
             }
 
-            return null;
+
+            return ht;
+        }
+
+        protected void onPostExecute(String result){
+            TextView t = (TextView) findViewById(R.id.textview1);
+            //t.setText(ht);
+            t.setText(ht);
+            t.setMovementMethod(new ScrollingMovementMethod());
         }
     }
 
-    private void readStream(InputStream in){
+    private String readStream(InputStream in){
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
         String line;
@@ -69,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Log.e("readStream", sb.toString());
+        return sb.toString();
+        //TextView text = (TextView) findViewById(R.id.textview1);
+        //text.setText(sb.toString());
     }
 
 
