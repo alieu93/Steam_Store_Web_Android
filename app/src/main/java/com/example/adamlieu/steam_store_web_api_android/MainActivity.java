@@ -8,6 +8,11 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,13 +32,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class Initialize extends AsyncTask<Void, Void, String> {
-        String ht;
+        String ht = "";
         protected String doInBackground(Void... params){
             try {
-                URL url = new URL("http://store.steampowered.com/search/?filter=comingsoon");
+                /*URL url = new URL("http://store.steampowered.com/search/?filter=comingsoon");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                ht = readStream(in);
+                ht = readStream(in);*/
+
+                Document document = Jsoup.connect("http://store.steampowered.com/search/?filter=comingsoon").get();
+                Element content = document.getElementById("search_result_container");
+
+                Elements titleName = content.getElementsByAttributeValueContaining("class", "col search_name ellipsis");
+                Elements releaseDate = content.getElementsByAttributeValueContaining("class", "col search_released responsive_secondrow");
+
+                for(int i = 0; i < titleName.size(); i++){
+                    ht += titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text() + "\n";
+                }
             } catch (MalformedURLException e) {
                 Log.e("MalformedURL: ", e.toString());
             } catch (IOException e) {
