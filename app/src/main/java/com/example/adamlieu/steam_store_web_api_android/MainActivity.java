@@ -7,8 +7,6 @@ import android.util.Log;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,7 +18,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayList<String> listGames = new ArrayList<String>();
+    //ArrayList<String> listGames = new ArrayList<String>();
+    ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
     private ListView listView;
     private ArrayAdapter<String> adapter;
 
@@ -75,7 +74,10 @@ public class MainActivity extends AppCompatActivity {
 
                 for(int i = 0; i < titleName.size(); i++){
                     //ht += titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text() + "\n";
-                    listGames.add(titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text());
+                    //listGames.add(titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text());
+                    UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
+                            releaseDate.get(i).text());
+                    listGames.add(newTitle);
                 }
             } catch (MalformedURLException e) {
                 Log.e("MalformedURL: ", e.toString());
@@ -88,7 +90,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result){
-            adapter.addAll(listGames);
+            for(UpcomingReleases u : listGames) {
+                adapter.add(u.display());
+            }
             adapter.notifyDataSetChanged();
         }
     }
