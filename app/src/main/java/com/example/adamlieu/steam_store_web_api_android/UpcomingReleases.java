@@ -7,18 +7,26 @@ package com.example.adamlieu.steam_store_web_api_android;
 public class UpcomingReleases {
     private String titleName;
     private String releaseDate;
+    private String storeURL;
+    private String imgURL;
 
     private boolean isWindows;
     private boolean isMac;
     private boolean isLinux;
 
-    public UpcomingReleases(String titleName, String releaseDate){
+    public UpcomingReleases(String titleName, String releaseDate, String storeURL, String imgURL){
         this.titleName = titleName;
         this.releaseDate = releaseDate;
+        this.storeURL = storeURL;
+        this.imgURL = imgURL;
     }
 
-    public String display(){
-        return titleName + "\n" + releaseDate;
+    public String getStoreURL(){
+        return storeURL;
+    }
+
+    public String toText(){
+        return titleName + "\n" + releaseDate; //+ "\n" + imgUrl;
     }
 
 }

@@ -31,15 +31,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listView = (ListView) findViewById(R.id.listview1);
-
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-
         listView.setAdapter(adapter);
-
         new Initialize().execute();
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount){}
 
@@ -69,14 +65,21 @@ public class MainActivity extends AppCompatActivity {
                 Document document = Jsoup.connect("http://store.steampowered.com/search/?filter=comingsoon").get();
                 Element content = document.getElementById("search_result_container");
 
+                //Title Name
                 Elements titleName = content.getElementsByAttributeValueContaining("class", "col search_name ellipsis");
+                //Release Date
                 Elements releaseDate = content.getElementsByAttributeValueContaining("class", "col search_released responsive_secondrow");
+                //Getting the link to the game's URL
+                Elements gameURL = content.select("a");
+                Elements thumbnail = content.getElementsByAttributeValueContaining("class", "col search_capsule").select("img");
+
 
                 for(int i = 0; i < titleName.size(); i++){
                     //ht += titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text() + "\n";
                     //listGames.add(titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text());
+
                     UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
-                            releaseDate.get(i).text());
+                            releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
                     listGames.add(newTitle);
                 }
             } catch (MalformedURLException e) {
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(String result){
             for(UpcomingReleases u : listGames) {
-                adapter.add(u.display());
+                adapter.add(u.toText());
             }
             adapter.notifyDataSetChanged();
         }
