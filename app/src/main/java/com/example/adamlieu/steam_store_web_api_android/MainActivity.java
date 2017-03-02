@@ -4,9 +4,12 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,7 +26,11 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayAdapter<String> adapter;
 
+    public String upcomingURL = "http://store.steampowered.com/search/?filter=comingsoon";
+
     private int pageCount = 0;
+    public int counter = 1;
+    public int currentSize = listGames.size();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +40,16 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listview1);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         listView.setAdapter(adapter);
-        new Initialize().execute();
+
+        new Initialize().execute(upcomingURL);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id){
+                String test = listGames.get(position).getTitleName();
+                Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
+            }
+        });
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -46,23 +62,21 @@ public class MainActivity extends AppCompatActivity {
 
                 if(scrollState == SCROLL_STATE_IDLE){
                     if(listView.getLastVisiblePosition() >= count - threshold && pageCount < 2){
-                        Log.i("Info", "Scroll Bottom");
+                        counter++;
+                        String test = upcomingURL + "&page=" + counter;
+                        Log.v("Test: ", test);
+                        new Initialize().execute(upcomingURL + "&page=" + counter);
                     }
                 }
             }
         });
     }
 
-    private class Initialize extends AsyncTask<Void, Void, String> {
-        //String ht = "";
-        protected String doInBackground(Void... params){
+    private class Initialize extends AsyncTask<String, Void, String> {
+        protected String doInBackground(String... params){
             try {
-                /*URL url = new URL("http://store.steampowered.com/search/?filter=comingsoon");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                ht = readStream(in);*/
-
-                Document document = Jsoup.connect("http://store.steampowered.com/search/?filter=comingsoon").get();
+                Document document = Jsoup.connect(params[0]).get();
+                Log.e("Reached", params[0]);
                 Element content = document.getElementById("search_result_container");
 
                 //Title Name
@@ -75,9 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                 for(int i = 0; i < titleName.size(); i++){
-                    //ht += titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text() + "\n";
-                    //listGames.add(titleName.get(i).getElementsByClass("title").text() + "\n" + "- " + releaseDate.get(i).text());
-
                     UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
                             releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
                     listGames.add(newTitle);
@@ -87,15 +98,19 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e("URL IOException: ", e.toString());
             }
-
-
             return null;
         }
 
         protected void onPostExecute(String result){
-            for(UpcomingReleases u : listGames) {
+            /*for(UpcomingReleases u : listGames) {
+                adapter.add(u.toText());
+            }*/
+            //Log.v("CurrentSize|listGames: ", "" + currentSize +"|"+ listGames.size());
+            for(int i = currentSize; i < listGames.size(); i++){
+                UpcomingReleases u = listGames.get(i);
                 adapter.add(u.toText());
             }
+            currentSize = listGames.size();
             adapter.notifyDataSetChanged();
         }
     }

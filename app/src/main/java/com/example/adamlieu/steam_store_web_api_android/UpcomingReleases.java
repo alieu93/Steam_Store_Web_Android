@@ -21,12 +21,10 @@ public class UpcomingReleases {
         this.imgURL = imgURL;
     }
 
-    public String getStoreURL(){
-        return storeURL;
-    }
+    public String getTitleName() { return titleName; }
 
-    public String toText(){
-        return titleName + "\n" + releaseDate; //+ "\n" + imgUrl;
-    }
+    public String getStoreURL(){ return storeURL; }
+
+    public String toText(){ return titleName + "\n" + releaseDate; }
 
 }
