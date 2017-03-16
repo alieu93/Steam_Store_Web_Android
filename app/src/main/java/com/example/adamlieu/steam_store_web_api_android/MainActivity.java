@@ -1,10 +1,12 @@
 package com.example.adamlieu.steam_store_web_api_android;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -32,10 +34,14 @@ public class MainActivity extends AppCompatActivity {
     public int counter = 1;
     public int currentSize = listGames.size();
 
+    public WebView webview;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        webview = (WebView) findViewById(R.id.steam_webview);
 
         listView = (ListView) findViewById(R.id.listview1);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
@@ -46,8 +52,13 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id){
-                String test = listGames.get(position).getTitleName();
-                Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
+                String test = listGames.get(position).getStoreURL();
+
+                Intent intent = new Intent(MainActivity.this, WebViewController.class);
+                intent.putExtra("URL", test);
+                startActivity(intent);
+
+                //Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
             }
         });
 
