@@ -102,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
                 for(int i = 0; i < titleName.size(); i++){
                     UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
                             releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
+
+                    //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
+                    //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
+                    if(titleName.get(i).select("span[class]").toString().contains("platform_img win")) newTitle.isWindows = true;
+                    if(titleName.get(i).select("span[class]").toString().contains("platform_img mac")) newTitle.isMac = true;
+                    if(titleName.get(i).select("span[class]").toString().contains("platform_img linux")) newTitle.isLinux = true;
+
+
                     listGames.add(newTitle);
                 }
             } catch (MalformedURLException e) {

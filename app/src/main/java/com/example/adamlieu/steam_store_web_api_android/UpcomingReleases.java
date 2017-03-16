@@ -10,9 +10,9 @@ public class UpcomingReleases {
     private String storeURL;
     private String imgURL;
 
-    private boolean isWindows;
-    private boolean isMac;
-    private boolean isLinux;
+    public boolean isWindows = false;
+    public boolean isMac = false;
+    public boolean isLinux = false;
 
     public UpcomingReleases(String titleName, String releaseDate, String storeURL, String imgURL){
         this.titleName = titleName;
@@ -23,8 +23,22 @@ public class UpcomingReleases {
 
     public String getTitleName() { return titleName; }
 
+    public String getReleaseDate() { return releaseDate; }
+
     public String getStoreURL(){ return storeURL; }
 
-    public String toText(){ return titleName + "\n" + releaseDate; }
+    public String toText(){
+        String platform = "Platform: ";
+
+        if(isWindows) platform += "Windows, ";
+        if(isMac) platform += "Mac, ";
+        if(isLinux) platform += "Linux, ";
+
+        if(releaseDate.isEmpty())
+            releaseDate = "TBD";
+
+
+        return titleName + "\n" + releaseDate + "\n" + platform;
+    }
 
 }
