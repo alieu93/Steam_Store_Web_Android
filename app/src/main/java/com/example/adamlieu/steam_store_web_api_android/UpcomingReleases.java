@@ -23,10 +23,27 @@ public class UpcomingReleases {
 
     public String getTitleName() { return titleName; }
 
-    public String getReleaseDate() { return releaseDate; }
+    public String getReleaseDate() {
+        if(releaseDate.isEmpty())
+            releaseDate = "TBD";
+        return releaseDate;
+    }
+
+    public String getPlatform(){
+        String platform = "Platform: ";
+
+        if(isWindows) platform += "Windows, ";
+        if(isMac) platform += "Mac, ";
+        if(isLinux) platform += "Linux, ";
+
+        return platform;
+    }
 
     public String getStoreURL(){ return storeURL; }
 
+    public String getImgURL(){ return imgURL; }
+
+    /*
     public String toText(){
         String platform = "Platform: ";
 
@@ -39,6 +56,6 @@ public class UpcomingReleases {
 
 
         return titleName + "\n" + releaseDate + "\n" + platform;
-    }
+    }*/
 
 }

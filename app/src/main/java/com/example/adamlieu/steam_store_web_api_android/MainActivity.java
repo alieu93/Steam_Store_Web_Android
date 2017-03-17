@@ -4,14 +4,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,60 +21,54 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    //ArrayList<String> listGames = new ArrayList<String>();
-    ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
-    private ListView listView;
-    private ArrayAdapter<String> adapter;
-
+    private static ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
     public String upcomingURL = "http://store.steampowered.com/search/?filter=comingsoon";
-
-    private int pageCount = 0;
-    public int counter = 1;
     public int currentSize = listGames.size();
 
     public WebView webview;
+
+    private static RecyclerView.Adapter recyclerAdapter;
+    private LinearLayoutManager layoutManager;
+    private static RecyclerView recyclerView;
+    static View.OnClickListener myOnClickListener;
+
+    private boolean loading = true;
+    private int counter = 1;
+
+    int pastVisibleItems, visibleItemCount, totalItemCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         webview = (WebView) findViewById(R.id.steam_webview);
 
-        listView = (ListView) findViewById(R.id.listview1);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-        listView.setAdapter(adapter);
+        recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        recyclerView.setHasFixedSize(true);
+
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
 
         new Initialize().execute(upcomingURL);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View view, int position, long id){
-                String test = listGames.get(position).getStoreURL();
+        recyclerAdapter = new CustomAdapter(listGames);
+        recyclerView.setAdapter(recyclerAdapter);
 
-                Intent intent = new Intent(MainActivity.this, WebViewController.class);
-                intent.putExtra("URL", test);
-                startActivity(intent);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener () {
+            public void onScrolled(RecyclerView rv, int dx, int dy){
+                if(dy > 0){
+                    visibleItemCount = layoutManager.getChildCount();
+                    totalItemCount = layoutManager.getItemCount();
+                    pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
 
-                //Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
-            }
-        });
-
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount){}
-
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState){
-                int threshold = 1;
-                int count = listView.getCount();
-
-                if(scrollState == SCROLL_STATE_IDLE){
-                    if(listView.getLastVisiblePosition() >= count - threshold && pageCount < 2){
+                    if((visibleItemCount + pastVisibleItems) >= totalItemCount){
+                        loading = false;
                         counter++;
-                        String test = upcomingURL + "&page=" + counter;
-                        Log.v("Test: ", test);
-                        new Initialize().execute(upcomingURL + "&page=" + counter);
+                        String newURL = upcomingURL + "&page=" + counter;
+                        new Initialize().execute(newURL);
+                        loading = true;
+
                     }
                 }
             }
@@ -104,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
                             releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
 
                     //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
-                    //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
                     if(titleName.get(i).select("span[class]").toString().contains("platform_img win")) newTitle.isWindows = true;
                     if(titleName.get(i).select("span[class]").toString().contains("platform_img mac")) newTitle.isMac = true;
                     if(titleName.get(i).select("span[class]").toString().contains("platform_img linux")) newTitle.isLinux = true;
@@ -121,16 +112,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result){
-            /*for(UpcomingReleases u : listGames) {
-                adapter.add(u.toText());
-            }*/
-            //Log.v("CurrentSize|listGames: ", "" + currentSize +"|"+ listGames.size());
-            for(int i = currentSize; i < listGames.size(); i++){
-                UpcomingReleases u = listGames.get(i);
-                adapter.add(u.toText());
-            }
-            currentSize = listGames.size();
-            adapter.notifyDataSetChanged();
+            recyclerAdapter.notifyDataSetChanged();
         }
     }
 
