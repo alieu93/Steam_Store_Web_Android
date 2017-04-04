@@ -57,7 +57,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.card_layout, parent, false);
-        view.setOnClickListener(MainActivity.myOnClickListener);
+        view.setOnClickListener(NewReleasesFragment.myOnClickListener);
         MyViewHolder myViewHolder = new MyViewHolder(view);
 
         return myViewHolder;

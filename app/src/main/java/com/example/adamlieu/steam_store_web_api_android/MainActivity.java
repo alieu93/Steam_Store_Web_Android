@@ -1,119 +1,75 @@
 package com.example.adamlieu.steam_store_web_api_android;
 
-import android.content.Intent;
-import android.os.AsyncTask;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
-import android.webkit.WebView;
+import android.support.v7.widget.Toolbar;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
-    public String upcomingURL = "http://store.steampowered.com/search/?filter=comingsoon";
-    public int currentSize = listGames.size();
-
-    public WebView webview;
-
-    private static RecyclerView.Adapter recyclerAdapter;
-    private LinearLayoutManager layoutManager;
-    private static RecyclerView recyclerView;
-    static View.OnClickListener myOnClickListener;
-
-    private boolean loading = true;
-    private int counter = 1;
-
-    int pastVisibleItems, visibleItemCount, totalItemCount;
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webview = (WebView) findViewById(R.id.steam_webview);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        recyclerView.setHasFixedSize(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
 
-        new Initialize().execute(upcomingURL);
-
-        recyclerAdapter = new CustomAdapter(listGames);
-        recyclerView.setAdapter(recyclerAdapter);
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener () {
-            public void onScrolled(RecyclerView rv, int dx, int dy){
-                if(dy > 0){
-                    visibleItemCount = layoutManager.getChildCount();
-                    totalItemCount = layoutManager.getItemCount();
-                    pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
-
-                    if((visibleItemCount + pastVisibleItems) >= totalItemCount){
-                        loading = false;
-                        counter++;
-                        String newURL = upcomingURL + "&page=" + counter;
-                        new Initialize().execute(newURL);
-                        loading = true;
-
-                    }
-                }
-            }
-        });
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+    }
+    private void setupViewPager(ViewPager viewPager){
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new NewReleasesFragment(), "Upcoming");
+        //adapter.addFragment(new FragmentTwo(), "Top Sellers");
+        //adapter.addFragment(new FragmentThree(), "THREE");
+        viewPager.setAdapter(adapter);
     }
 
-    private class Initialize extends AsyncTask<String, Void, String> {
-        protected String doInBackground(String... params){
-            try {
-                Document document = Jsoup.connect(params[0]).get();
-                Log.e("Reached", params[0]);
-                Element content = document.getElementById("search_result_container");
 
-                //Title Name
-                Elements titleName = content.getElementsByAttributeValueContaining("class", "col search_name ellipsis");
-                //Release Date
-                Elements releaseDate = content.getElementsByAttributeValueContaining("class", "col search_released responsive_secondrow");
-                //Getting the link to the game's URL
-                Elements gameURL = content.select("a");
-                Elements thumbnail = content.getElementsByAttributeValueContaining("class", "col search_capsule").select("img");
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> fragmentList = new ArrayList<>();
+        private final List<String> fragmentTitleList = new ArrayList<>();
 
-
-                for(int i = 0; i < titleName.size(); i++){
-                    UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
-                            releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
-
-                    //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
-                    if(titleName.get(i).select("span[class]").toString().contains("platform_img win")) newTitle.isWindows = true;
-                    if(titleName.get(i).select("span[class]").toString().contains("platform_img mac")) newTitle.isMac = true;
-                    if(titleName.get(i).select("span[class]").toString().contains("platform_img linux")) newTitle.isLinux = true;
-
-
-                    listGames.add(newTitle);
-                }
-            } catch (MalformedURLException e) {
-                Log.e("MalformedURL: ", e.toString());
-            } catch (IOException e) {
-                Log.e("URL IOException: ", e.toString());
-            }
-            return null;
+        public ViewPagerAdapter(FragmentManager manager){
+            super(manager);
         }
 
-        protected void onPostExecute(String result){
-            recyclerAdapter.notifyDataSetChanged();
+        @Override
+        public Fragment getItem(int position){
+            return fragmentList.get(position);
         }
+
+        @Override
+        public int getCount(){
+            return fragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title){
+            fragmentList.add(fragment);
+            fragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position){
+            return fragmentTitleList.get(position);
+        }
+
+
     }
 
 }

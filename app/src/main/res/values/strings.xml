@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Steam_Store_Web_API_Android</string>
+    <string name="app_name">Steam_Store_Web_API</string>
+    <string name="action_settings">Settings</string>
 </resources>
