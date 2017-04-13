@@ -1,35 +1,36 @@
 package com.example.adamlieu.steam_store_web_api_android;
 
-        import android.os.AsyncTask;
-        import android.os.Bundle;
-        import android.support.annotation.Nullable;
-        import android.support.v4.app.Fragment;
-        import android.support.v7.widget.DefaultItemAnimator;
-        import android.support.v7.widget.LinearLayoutManager;
-        import android.support.v7.widget.RecyclerView;
-        import android.util.Log;
-        import android.view.LayoutInflater;
-        import android.view.View;
-        import android.view.ViewGroup;
-        import android.webkit.WebView;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
 
-        import org.jsoup.Jsoup;
-        import org.jsoup.nodes.Document;
-        import org.jsoup.nodes.Element;
-        import org.jsoup.select.Elements;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-        import java.io.IOException;
-        import java.net.MalformedURLException;
-        import java.util.ArrayList;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
 
 /**
- * Created by Adam Lieu on 4/3/2017.
+ * Created by Adam Lieu on 4/13/2017.
  */
 
-public class NewReleasesFragment extends Fragment {
+public class TopSellersFragment extends Fragment {
 
-    private static ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
-    public String upcomingURL = "http://store.steampowered.com/search/?filter=comingsoon";
+    //private static ArrayList<UpcomingReleases> listGames = new ArrayList<UpcomingReleases>();
+    private static ArrayList<TopSellerGames> listGames = new ArrayList<TopSellerGames>();
+    public String upcomingURL = "http://store.steampowered.com/search/?filter=topsellers";
     public int currentSize = listGames.size();
 
     public WebView webview;
@@ -44,7 +45,7 @@ public class NewReleasesFragment extends Fragment {
 
     int pastVisibleItems, visibleItemCount, totalItemCount;
 
-    public NewReleasesFragment() {
+    public TopSellersFragment() {
 
     }
 
@@ -76,7 +77,7 @@ public class NewReleasesFragment extends Fragment {
         //new MainActivity.Initialize().execute(upcomingURL);
         new Initialize().execute(upcomingURL);
 
-        recyclerAdapter = new CustomAdapter(listGames);
+        recyclerAdapter = new CustomAdapterTopSellers(listGames);
         recyclerView.setAdapter(recyclerAdapter);
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener () {
@@ -113,11 +114,17 @@ public class NewReleasesFragment extends Fragment {
                 //Getting the link to the game's URL
                 Elements gameURL = content.select("a");
                 Elements thumbnail = content.getElementsByAttributeValueContaining("class", "col search_capsule").select("img");
+                Elements prices = content.getElementsByAttributeValueContaining("class", "col search_price_discount_combined responsive_secondrow");
 
 
                 for(int i = 0; i < titleName.size(); i++){
-                    UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
-                            releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
+                    //UpcomingReleases newTitle = new UpcomingReleases(titleName.get(i).getElementsByClass("title").text(),
+                    //        releaseDate.get(i).text(), gameURL.get(i).attr("href"), thumbnail.get(i).attr("src"));
+
+                    TopSellerGames newTitle = new TopSellerGames(titleName.get(i).getElementsByClass("title").text(),
+                            releaseDate.get(i).text(), gameURL.get(i).attr("href"),
+                            thumbnail.get(i).attr("src"), prices.get(i).getElementsByClass("col search_price  responsive_secondrow").text());
+
 
                     //Log.v("Platform: ", titleName.get(i).select("span[class]").toString());
                     if(titleName.get(i).select("span[class]").toString().contains("platform_img win")) newTitle.isWindows = true;
